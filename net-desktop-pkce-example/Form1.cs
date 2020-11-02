@@ -186,5 +186,27 @@ namespace HelloXeroAPI_PKCE
         private void txtBoxRefreshToken_TextChanged(object sender, EventArgs e)
         {
         }
+
+        private async void btnRefresh_Click(object sender, EventArgs e)
+        {
+            const string url = "https://identity.xero.com/connect/token";
+            var client = new HttpClient();
+            var formContent = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("grant_type", "refresh_token"),
+                new KeyValuePair<string, string>("client_id", txtBoxClientID.Text),
+                new KeyValuePair<string, string>("refresh_token", txtBoxRefreshToken.Text),
+            });
+
+            var response = await client.PostAsync(url, formContent);
+
+            //read the response and populate the boxes for each token
+            //could also parse the expiry here if required
+            var content = await response.Content.ReadAsStringAsync();
+            var tokens = JObject.Parse(content);
+
+            txtBoxAccessToken.Text = tokens["access_token"]?.ToString();
+            txtBoxRefreshToken.Text = tokens["refresh_token"]?.ToString();
+        }
     }
 }
